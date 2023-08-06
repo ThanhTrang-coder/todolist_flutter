@@ -1,19 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:todos_flutter/screens/add_task_screen.dart';
+import 'package:todos_flutter/widgets/tasks_list.dart';
 
-class HomePage extends StatelessWidget {
-  HomePage({super.key});
+import '../blocs/bloc_exports.dart';
+import '../models/task_model.dart';
+import 'drawer_navigation.dart';
 
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _descController = TextEditingController();
+class TasksPage extends StatefulWidget {
+  const TasksPage({super.key});
+  static const id = 'tasks_page';
 
+  @override
+  State<TasksPage> createState() => _TaskPageState();
+}
+
+class _TaskPageState extends State<TasksPage> {
   void _addTask(BuildContext context) {
     showModalBottomSheet(
       context: context,
       builder: (context) => SingleChildScrollView(
         child: Container(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-          child: AddTaskScreen(titleController: _titleController, descController: _descController,),
+          padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom
+          ),
+          child: const AddTaskScreen(),
         ),
       ),
     );
@@ -21,69 +31,45 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Future showAddDialog() {
-      return showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Add todo'),
-          content:
-          const SizedBox(
-            width: 300,
-            height: 150,
-            child: Column(
-              children: [
-                TextField(
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Enter title',
+    return BlocBuilder<TasksBloc, TasksState> (
+      builder: (context, state) {
+        List<TaskModel> tasksList = state.allTasks;
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Tasks App'),
+            centerTitle: true,
+            backgroundColor: Colors.grey,
+            foregroundColor: Colors.white,
+          ),
+          drawer: const DrawerNavigation(),
+          body: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 10,),
+              Center(
+                child: Text(
+                    '${state.allTasks.length} tasks',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
                 ),
-                SizedBox(height: 10,),
-                TextField(
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Enter todo',
-                  ),
-                ),
-              ],
-            ),
+              //TasksList(tasksList: tasks, realm: realm),
+              TasksList(tasksList: tasksList,),
+            ],
           ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.pop(context, 'Cancel'),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context, 'OK');
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Scaffold(
-      body: const Column(
-        children: [
-          Center(
-            child: Text(
-              'Task',
-              style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => _addTask(context),
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.grey.shade400,
+            tooltip: 'Add task',
+            child: const Icon(Icons.add_rounded, size: 35,),
           ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => showAddDialog(),
-        tooltip: 'Add task',
-        child: const Icon(Icons.add),
-      ),
+        );
+      },
     );
   }
 }
+
 

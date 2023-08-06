@@ -1,11 +1,11 @@
-import 'package:equatable/equatable.dart';
-import 'package:todos_flutter/models/task_model.dart';
+part of 'tasks_bloc.dart';
 
 class TasksEvent extends Equatable {
   const TasksEvent();
 
   @override
   List<Object?> get props => [];
+
 }
 
 class AddTask extends TasksEvent {
