@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:todos_flutter/models/task_model.dart';
+import 'package:realm/realm.dart';
 import 'package:todos_flutter/widgets/task_tile.dart';
 
+import '../models/task_model.dart';
+
 class TasksList extends StatelessWidget {
-  List<TaskModel> tasksList;
+  RealmResults<TaskModel> tasksList;
 
   TasksList({
     super.key, required this.tasksList

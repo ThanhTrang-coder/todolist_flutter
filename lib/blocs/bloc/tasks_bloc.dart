@@ -1,39 +1,47 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:realm/realm.dart';
+import '../../database/RealmDatabase.dart';
 import '../../models/task_model.dart';
 part 'tasks_event.dart';
 part 'tasks_state.dart';
 
 class TasksBloc extends Bloc<TasksEvent, TasksState> {
-  TasksBloc(): super(const TasksState()) {
+  RealmDatabase db = RealmDatabase();
+
+  TasksBloc(this.db): super(TaskLoadedState(allTasks: db.getAllTask())) {
+    on<LoadTaskEvent>(_onLoadTask);
     on<AddTask>(_onAddTask);
     on<UpdateTask>(_onUpdateTask);
     on<DeleteTask>(_onDeleteTask);
   }
 
+  void _onLoadTask(event, emit) {
+    emit(TaskLoadingState());
+    try {
+      final tasks = db.getAllTask();
+      emit(TaskLoadedState(allTasks: tasks));
+    } catch (e) {
+      emit(TaskErrorState(e.toString()));
+    }
+  }
+
   void _onAddTask(AddTask event, Emitter<TasksState> emit) {
-    final state = this.state;
-    emit(TasksState(
-      allTasks: List.from(state.allTasks)..add(event.task)
-    ));
+    var task = event.task;
+    db.addTask(task);
+    var tasks = db.getAllTask();
+
+    emit(TaskLoadedState(allTasks: tasks));
   }
 
   void _onUpdateTask(UpdateTask event, Emitter<TasksState> emit) {
-    final state = this.state;
     final task = event.task;
-    final int index = state.allTasks.indexOf(task);
-
-    List<TaskModel> allTasks = List.from(state.allTasks)..remove(task);
-    task.isDone == false
-      ? allTasks.insert(index, task.copyWith(isDone: true))
-      : allTasks.insert(index, task.copyWith(isDone: false));
-    emit(TasksState(allTasks: allTasks));
+    db.updateTask(task);
+    emit(TaskLoadedState(allTasks: db.getAllTask()));
   }
 
   void _onDeleteTask(DeleteTask event, Emitter<TasksState> emit) {
-    final state = this.state;
-    emit(TasksState(
-      allTasks: List.from(state.allTasks)..remove(event.task),
-    ));
+    db.deleteTask(event.task);
+    emit(TaskLoadedState(allTasks: db.getAllTask()));
   }
 }

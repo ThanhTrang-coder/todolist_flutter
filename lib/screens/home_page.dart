@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:realm/realm.dart';
+import 'package:todos_flutter/database/RealmDatabase.dart';
 import 'package:todos_flutter/screens/add_task_screen.dart';
 import 'package:todos_flutter/widgets/tasks_list.dart';
 
@@ -33,7 +35,6 @@ class _TaskPageState extends State<TasksPage> {
   Widget build(BuildContext context) {
     return BlocBuilder<TasksBloc, TasksState> (
       builder: (context, state) {
-        List<TaskModel> tasksList = state.allTasks;
         return Scaffold(
           appBar: AppBar(
             title: const Text('Tasks App'),
@@ -42,22 +43,34 @@ class _TaskPageState extends State<TasksPage> {
             foregroundColor: Colors.white,
           ),
           drawer: const DrawerNavigation(),
-          body: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 10,),
-              Center(
-                child: Text(
-                    '${state.allTasks.length} tasks',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
+          body: BlocBuilder<TasksBloc, TasksState> (
+            builder: (context, state) {
+              if(state is TaskLoadingState && RealmDatabase().getAllTask() == null) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+              if(state is TaskLoadedState) {
+                RealmResults<TaskModel> tasksList = state.allTasks;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Center(
+                      child: Text(
+                        '${state.allTasks.length} tasks',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              //TasksList(tasksList: tasks, realm: realm),
-              TasksList(tasksList: tasksList,),
-            ],
+                    //TasksList(tasksList: tasks, realm: realm),
+                    TasksList(tasksList: tasksList,),
+                  ],
+                );
+              }
+              return const Text('You do not task to do!');
+            },
           ),
           floatingActionButton: FloatingActionButton(
             onPressed: () => _addTask(context),

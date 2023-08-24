@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:todos_flutter/blocs/bloc_exports.dart';
+import 'package:todos_flutter/database/RealmDatabase.dart';
 import 'package:todos_flutter/screens/home_page.dart';
 import 'package:todos_flutter/services/app_router.dart';
 
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => TasksBloc(),
+      create: (_) => TasksBloc(RealmDatabase()),
       child: MaterialApp(
         title: 'Flutter Tasks App',
         theme: ThemeData(
